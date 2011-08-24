@@ -7,8 +7,8 @@ require 'json/pure'
 module VMC::Cli
   class Config
 
-    DEFAULT_TARGET  = 'api.vcap.me'
-    DEFAULT_SUGGEST = 'vcap.me'
+    DEFAULT_TARGET  = 'aws.af.cm'
+    DEFAULT_SUGGEST = 'af.cm'
 
     TARGET_FILE    = '~/.vmc_target'
     TOKEN_FILE     = '~/.vmc_token'
