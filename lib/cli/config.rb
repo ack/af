@@ -10,10 +10,10 @@ module VMC::Cli
     DEFAULT_TARGET  = 'aws.af.cm'
     DEFAULT_SUGGEST = 'af.cm'
 
-    TARGET_FILE    = '~/.vmc_target'
-    TOKEN_FILE     = '~/.vmc_token'
-    INSTANCES_FILE = '~/.vmc_instances'
-    ALIASES_FILE   = '~/.vmc_aliases'
+    TARGET_FILE    = '~/.af_target'
+    TOKEN_FILE     = '~/.af_token'
+    INSTANCES_FILE = '~/.af_instances'
+    ALIASES_FILE   = '~/.af_aliases'
 
     class << self
       attr_accessor :colorize

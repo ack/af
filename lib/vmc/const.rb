@@ -2,7 +2,7 @@ module VMC
 
   # This is the internal VMC version number, and is not necessarily
   # the same as the RubyGem version (VMC::Cli::VERSION).
-  VERSION = '0.3.2'
+  VERSION = '0.3.2.1'
 
   # Targets
   DEFAULT_TARGET = 'https://api.cloudfoundry.com'
