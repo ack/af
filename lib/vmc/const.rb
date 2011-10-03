@@ -2,11 +2,11 @@ module VMC
 
   # This is the internal VMC version number, and is not necessarily
   # the same as the RubyGem version (VMC::Cli::VERSION).
-  VERSION = '0.3.2.1'
+  VERSION = '0.3.12.2'
 
   # Targets
-  DEFAULT_TARGET = 'https://api.cloudfoundry.com'
-  DEFAULT_LOCAL_TARGET = 'http://api.vcap.me'
+  DEFAULT_TARGET = 'api.aws.af.cm'
+  DEFAULT_LOCAL_TARGET = 'api.aws.af.cm'
 
   # General Paths
   INFO_PATH            = '/info'
