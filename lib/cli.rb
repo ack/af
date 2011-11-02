@@ -24,6 +24,7 @@ module VMC
   end
 end
 
+require "#{ROOT}/cli/config"
 require "#{ROOT}/cli/version"
 require "#{ROOT}/cli/core_ext"
 require "#{ROOT}/cli/errors"
