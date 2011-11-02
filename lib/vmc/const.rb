@@ -5,8 +5,8 @@ module VMC
   VERSION = '0.3.12.2'
 
   # Targets
-  DEFAULT_TARGET = 'api.aws.af.cm'
-  DEFAULT_LOCAL_TARGET = 'api.aws.af.cm'
+  DEFAULT_TARGET = 'https://api.aws.af.cm'
+  DEFAULT_LOCAL_TARGET = 'http://api.vcap.me'
 
   # General Paths
   INFO_PATH            = '/info'
