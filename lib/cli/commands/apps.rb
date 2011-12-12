@@ -258,6 +258,11 @@ module VMC::Cli::Command
       end
     end
 
+    def export(appname)
+      display "Attempting to export #{appname}"
+      client.export_app appname
+    end
+
     def files(appname, path='/')
       return all_files(appname, path) if @options[:all] && !@options[:instance]
       instance = @options[:instance] || '0'

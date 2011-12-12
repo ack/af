@@ -111,6 +111,13 @@ class VMC::Client
     http_delete("#{VMC::APPS_PATH}/#{name}")
   end
 
+  # Exports current droplet in zip format
+  def export_app(name)
+    check_login_status
+    content = http_get("#{VMC::APPS_PATH}/#{name}/export")
+    File.open("#{name}.zip", "w+") << content[1]
+  end
+
   def app_info(name)
     check_login_status
     json_get("#{VMC::APPS_PATH}/#{name}")

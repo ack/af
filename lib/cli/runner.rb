@@ -219,6 +219,10 @@ class VMC::Cli::Runner
       usage('af list')
       set_cmd(:apps, :list)
 
+    when 'export'
+      usage('af export <appname>')
+      set_cmd(:apps, :export, 1)
+
     when 'start'
       usage('af start <appname>')
       set_cmd(:apps, :start, 1)

@@ -48,6 +48,7 @@ Currently available af commands are:
     restart <appname> [--debug [MODE]]           Restart the application
     delete <appname>                             Delete the application
     rename <appname> <newname>                   Rename the application
+    export <appname>                             Exports the current version in zip format
 
   Application Updates
     update <appname> [--path,--debug [MODE]]     Update the application bits
