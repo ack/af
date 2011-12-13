@@ -260,7 +260,9 @@ module VMC::Cli::Command
 
     def export(appname)
       display "Attempting to export #{appname}"
-      client.export_app appname
+      if client.export_app(appname)
+        display "Exported to #{appname}.zip".green
+      end
     end
 
     def files(appname, path='/')
