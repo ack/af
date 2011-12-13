@@ -112,10 +112,10 @@ class VMC::Client
   end
 
   # Exports current droplet in zip format
-  def export_app(name)
+  def export_app(name, path = Dir.getwd)
     check_login_status
     content = http_get("#{VMC::APPS_PATH}/#{name}/export")
-    File.open("#{name}.zip", "w+") << content[1]
+    File.open("#{path}/#{name}.zip", "w+") << content[1]
   end
 
   def app_info(name)
