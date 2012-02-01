@@ -82,6 +82,19 @@ module VMC::Cli::Command
       check_app_for_restart(dest_app)
     end
 
+
+    def export_service(service=nil, filename=nil)
+      raise VMC::Client::AuthError unless client.logged_in?
+      path = client.get_stream(service, filename)
+      return path
+    end
+
+    def import_service(service=nil, filename=nil)
+      raise VMC::Client::AuthError unless client.logged_in?
+      path = client.put_stream(service, filename)
+      return display path
+    end
+
     def tunnel(service=nil, client_name=nil)
       unless defined? Caldecott
         display "To use `vmc tunnel', you must first install Caldecott:"

@@ -78,6 +78,8 @@ Currently available af commands are:
     bind-service <servicename> <appname>         Bind a service to an application
     unbind-service <servicename> <appname>       Unbind service from the application
     clone-services <src-app> <dest-app>          Clone service bindings from <src-app> application to <dest-app>
+    export-service <servicename> <filename>      Export data from <servicename> to <filename>
+    import-service <servicename> <filename>      Import data from <filename> into <servicename>
     tunnel <servicename> [--port]                Create a local tunnel to a service
     tunnel <servicename> <clientcmd>             Create a local tunnel to a service and start a local client
 

@@ -155,6 +155,47 @@ class VMC::Client
     body
   end
 
+  def put_stream(service, filename)
+    check_login_status
+    url = "#{VMC::SERVICES_PATH}/upload/#{service}"
+    url.gsub!('//', '/')
+  end
+  
+  def get_stream(service, filename)
+    check_login_status
+    url = "#{self.target}#{VMC::SERVICES_PATH}/download/#{service}"
+    uri = URI.parse(url)
+    request = Net::HTTP.new(uri.host)
+    output = open(filename, "wb")
+    bytes = 0
+    headers = {}
+    headers['AUTHORIZATION'] = @auth_token if @auth_token
+    headers['PROXY-USER'] = @proxy if @proxy
+    # should be default, but forced here just in case
+    headers["accept-encoding"] = "gzip;q=1.0,deflate;q=0.6,identity;q=0.3"
+
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      request = Net::HTTP::Get.new(uri.request_uri, headers)
+      http.request(request) do |response|
+        status = response.code.to_i
+        if status != 200
+          puts parse_error_message(status, response.body).red
+          return
+        end
+        puts "Streaming to #{filename}".green
+        response.read_body do |chunk|
+          output.write(chunk)
+          bytes += chunk.length
+          # $stdout.write('.'.green)
+        end
+        # $stdout.write("\n")
+      end
+    end
+    puts "#{bytes} bytes written".green
+  ensure
+    output.close
+  end
+  
   ######################################################
   # Services
   ######################################################

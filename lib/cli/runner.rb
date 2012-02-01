@@ -353,6 +353,14 @@ class VMC::Cli::Runner
       usage('vmc clone-services <src-app> <dest-app>')
       set_cmd(:services, :clone_services, 2)
 
+    when 'export-service', 'export_service'
+      usage('vmc export-service <servicename> <filename>')
+      set_cmd(:services, :export_service, 2)
+
+    when 'import-service', 'import_service'
+      usage('vmc import-service <servicename> <filename>')
+      set_cmd(:services, :import_service, 2)
+
     when 'aliases'
       usage('vmc aliases')
       set_cmd(:misc, :aliases)
