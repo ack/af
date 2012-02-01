@@ -38,6 +38,10 @@ module VMCExtensions
     raise VMC::Cli::CliExit, "#{prefix}#{message}"
   end
 
+  def warn(msg)
+    say "#{"[WARNING]".yellow} #{msg}"
+  end
+
   def quit(message = nil)
     raise VMC::Cli::GracefulExit, message
   end
@@ -64,7 +68,6 @@ module VMCExtensions
     return sprintf("%.#{prec}fM", size/(1024.0*1024.0)) if size < (1024*1024*1024)
     return sprintf("%.#{prec}fG", size/(1024.0*1024.0*1024.0))
   end
-
 end
 
 module VMCStringExtensions

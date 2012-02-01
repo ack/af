@@ -39,17 +39,18 @@ Currently available af commands are:
     push [appname] --instances <N>               Set the expected number <N> of instances
     push [appname] --mem M                       Set the memory reservation for the application
     push [appname] --runtime RUNTIME             Set the runtime to use for the application
+    push [appname] --debug [MODE]                Push application and start in a debug mode
     push [appname] --no-start                    Do not auto-start the application
 
   Application Operations
-    start <appname>                              Start the application
+    start <appname> [--debug [MODE]]             Start the application
     stop  <appname>                              Stop the application
-    restart <appname>                            Restart the application
+    restart <appname> [--debug [MODE]]           Restart the application
     delete <appname>                             Delete the application
     rename <appname> <newname>                   Rename the application
 
   Application Updates
-    update <appname> [--path]                    Update the application bits
+    update <appname> [--path,--debug [MODE]]     Update the application bits
     mem <appname> [memsize]                      Update the memory reservation for an application
     map <appname> <url>                          Register the application to the url
     unmap <appname> <url>                        Unregister the application from the url
@@ -77,6 +78,8 @@ Currently available af commands are:
     bind-service <servicename> <appname>         Bind a service to an application
     unbind-service <servicename> <appname>       Unbind service from the application
     clone-services <src-app> <dest-app>          Clone service bindings from <src-app> application to <dest-app>
+    tunnel <servicename> [--port]                Create a local tunnel to a service
+    tunnel <servicename> <clientcmd>             Create a local tunnel to a service and start a local client
 
   Administration
     user                                         Display user account information

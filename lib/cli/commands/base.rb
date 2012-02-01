@@ -1,13 +1,15 @@
-
 require 'rubygems'
+require 'interact'
 require 'terminal-table/import'
-require 'highline/import'
 
 module VMC::Cli
 
   module Command
 
     class Base
+      include Interactive
+      disable_rewind
+
       attr_reader :no_prompt, :prompt_ok
 
       def initialize(options={})
@@ -15,19 +17,15 @@ module VMC::Cli
         @no_prompt = @options[:noprompts]
         @prompt_ok = !no_prompt
 
-        # Fix for system ruby and Highline (stdin) on MacOSX
-        if RUBY_PLATFORM =~ /darwin/ && RUBY_VERSION == '1.8.7' && RUBY_PATCHLEVEL <= 174
-          HighLine.track_eof = false
-        end
-
         # Suppress colorize on Windows systems for now.
-        if !!RUBY_PLATFORM['mingw'] || !!RUBY_PLATFORM['mswin32'] || !!RUBY_PLATFORM['cygwin']
+        if WINDOWS
           VMC::Cli::Config.colorize = false
         end
-
       end
 
-      def client
+      # Inject a client to help in testing.
+      def client(cli=nil)
+        @client ||= cli
         return @client if @client
         @client = VMC::Client.new(target_url, auth_token)
         @client.trace = VMC::Cli::Config.trace if VMC::Cli::Config.trace
@@ -36,18 +34,19 @@ module VMC::Cli
       end
 
       def client_info
-        return @client_info if @client_info
-        @client_info = client.info
+        @client_info ||= client.info
       end
 
       def target_url
-        return @target_url if @target_url
-        @target_url = VMC::Cli::Config.target_url
+        @target_url ||= VMC::Cli::Config.target_url
+      end
+
+      def target_base
+        @target_base ||= VMC::Cli::Config.suggest_url
       end
 
       def auth_token
-        return @auth_token if @auth_token
-        @auth_token = VMC::Cli::Config.auth_token
+        @auth_token ||= VMC::Cli::Config.auth_token
       end
 
       def runtimes_info
@@ -72,7 +71,6 @@ module VMC::Cli
         end
         @frameworks
       end
-
     end
   end
 end

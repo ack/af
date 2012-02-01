@@ -30,14 +30,15 @@ module VMC::Cli::Command
       client = VMC::Client.new(target_url)
       unless client.target_valid?
         if prompt_ok
-          display "Host is not valid: '#{target_url}'".red
-          show_response = ask "Would you like see the response [yN]? "
-          display "\n<<<\n#{client.raw_info}\n>>>\n" if show_response.upcase == 'Y'
+          display "Host is not available or is not valid: '#{target_url}'".red
+          show_response = ask "Would you like see the response?",
+                              :default => false
+          display "\n<<<\n#{client.raw_info}\n>>>\n" if show_response
         end
         exit(false)
       else
         VMC::Cli::Config.store_target(target_url)
-        say "Succesfully targeted to [#{target_url}]".green
+        say "Successfully targeted to [#{target_url}]".green
       end
     end
 

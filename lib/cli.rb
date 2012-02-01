@@ -1,17 +1,17 @@
-
 ROOT = File.expand_path(File.dirname(__FILE__))
+WINDOWS = !!(RUBY_PLATFORM =~ /mingw|mswin32|cygwin/)
+
 
 module VMC
-
   autoload :Client,           "#{ROOT}/vmc/client"
 
   module Cli
-
     autoload :Config,         "#{ROOT}/cli/config"
     autoload :Framework,      "#{ROOT}/cli/frameworks"
     autoload :Runner,         "#{ROOT}/cli/runner"
     autoload :ZipUtil,        "#{ROOT}/cli/zip_util"
     autoload :ServicesHelper, "#{ROOT}/cli/services_helper"
+    autoload :TunnelHelper,   "#{ROOT}/cli/tunnel_helper"
 
     module Command
       autoload :Base,         "#{ROOT}/cli/commands/base"

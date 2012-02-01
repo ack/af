@@ -2,6 +2,7 @@ module VMC::Cli::Command
 
   class Services < Base
     include VMC::Cli::ServicesHelper
+    include VMC::Cli::TunnelHelper
 
     def services
       ss = client.services_info
@@ -20,15 +21,15 @@ module VMC::Cli::Command
       unless no_prompt || service
         services = client.services_info
         err 'No services available to provision' if services.empty?
-        choose do |menu|
-          menu.prompt = 'Please select one you wish to provision: '
-          menu.select_by = :index_or_name
-          services.each do |service_type, value|
-            value.each do |vendor, version|
-              menu.choice(vendor.to_s) { service = vendor.to_s }
-            end
-          end
-        end
+        service = ask(
+          "Which service would you like to provision?",
+          { :indexed => true,
+            :choices =>
+              services.values.collect { |type|
+                type.keys.collect(&:to_s)
+              }.flatten
+          }
+        )
       end
       name = @options[:name] unless name
       unless name
@@ -44,13 +45,12 @@ module VMC::Cli::Command
       unless no_prompt || service
         user_services = client.services
         err 'No services available to delete' if user_services.empty?
-        choose do |menu|
-          menu.prompt = 'Please select one you wish to delete: '
-          menu.select_by = :index_or_name
-          user_services.each do |s|
-            menu.choice(s[:name]) { service = s[:name] }
-          end
-        end
+        service = ask(
+          "Which service would you like to delete?",
+          { :indexed => true,
+            :choices => user_services.collect { |s| s[:name] }
+          }
+        )
       end
       err "Service name required." unless service
       display "Deleting service [#{service}]: ", false
@@ -82,5 +82,99 @@ module VMC::Cli::Command
       check_app_for_restart(dest_app)
     end
 
+    def tunnel(service=nil, client_name=nil)
+      unless defined? Caldecott
+        display "To use `vmc tunnel', you must first install Caldecott:"
+        display ""
+        display "\tgem install caldecott"
+        display ""
+        display "Note that you'll need a C compiler. If you're on OS X, Xcode"
+        display "will provide one. If you're on Windows, try DevKit."
+        display ""
+        display "This manual step will be removed in the future."
+        display ""
+        err "Caldecott is not installed."
+      end
+
+      ps = client.services
+      err "No services available to tunnel to" if ps.empty?
+
+      unless service
+        choices = ps.collect { |s| s[:name] }.sort
+        service = ask(
+          "Which service to tunnel to?",
+          :choices => choices,
+          :indexed => true
+        )
+      end
+
+      info = ps.select { |s| s[:name] == service }.first
+
+      err "Unknown service '#{service}'" unless info
+
+      # TODO: rather than default to a particular port, we should get
+      # the defaults based on the service name.. i.e. known services should
+      # have known local default ports for this side of the tunnel.
+      port = pick_tunnel_port(@options[:port] || 10000)
+
+      raise VMC::Client::AuthError unless client.logged_in?
+
+      if not tunnel_pushed?
+        display "Deploying tunnel application '#{tunnel_appname}'."
+        auth = ask("Create a password", :echo => "*")
+        push_caldecott(auth)
+        bind_service_banner(service, tunnel_appname, false)
+        start_caldecott
+      else
+        auth = ask("Password", :echo => "*")
+      end
+
+      if not tunnel_healthy?(auth)
+        display "Redeploying tunnel application '#{tunnel_appname}'."
+
+        # We don't expect caldecott not to be running, so take the
+        # most aggressive restart method.. delete/re-push
+        client.delete_app(tunnel_appname)
+        invalidate_tunnel_app_info
+
+        push_caldecott(auth)
+        bind_service_banner(service, tunnel_appname, false)
+        start_caldecott
+      end
+
+      if not tunnel_bound?(service)
+        bind_service_banner(service, tunnel_appname)
+      end
+
+      conn_info = tunnel_connection_info info[:vendor], service, auth
+      display_tunnel_connection_info(conn_info)
+      start_tunnel(service, port, conn_info, auth)
+
+      clients = get_clients_for(info[:vendor])
+
+      if clients.empty?
+        client_name ||= "none"
+      else
+        client_name ||= ask(
+          "Which client would you like to start?",
+          :choices => ["none"] + clients.keys,
+          :indexed => true
+        )
+      end
+
+      if client_name == "none"
+        wait_for_tunnel_end
+      else
+        wait_for_tunnel_start(port)
+        unless start_local_prog(clients[client_name], conn_info, port)
+          err "'#{client_name}' executation failed; is it in your $PATH?"
+        end
+      end
+    end
+
+    def get_clients_for(type)
+      conf = VMC::Cli::Config.clients
+      conf[type] || {}
+    end
   end
 end
