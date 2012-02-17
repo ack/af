@@ -157,8 +157,32 @@ class VMC::Client
 
   def put_stream(service, filename)
     check_login_status
-    url = "#{VMC::SERVICES_PATH}/upload/#{service}"
-    url.gsub!('//', '/')
+    url = "#{self.target}#{VMC::SERVICES_PATH}/upload/#{service}"
+    uri = URI.parse(url)
+    request = Net::HTTP.new(uri.host)
+    headers = {}
+    headers['AUTHORIZATION'] = @auth_token if @auth_token
+    headers['PROXY-USER'] = @proxy if @proxy
+    # should be default, but forced here just in case
+    headers["Content-Length"] = File.size(filename).to_s
+    headers["Content-Type"] = 'application/octet-stream'
+    input = open(filename, 'rb')
+    status = nil
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      request = Net::HTTP::Put.new(uri.request_uri, headers)
+      request.body_stream = input
+      # TODO: yield progress somehow
+      http.request(request) do |response|
+        status = response.code.to_i
+      end
+    end
+    if status == 200
+      true
+    else
+      status
+    end
+  ensure
+    input.close
   end
   
   def get_stream(service, filename)
@@ -166,34 +190,24 @@ class VMC::Client
     url = "#{self.target}#{VMC::SERVICES_PATH}/download/#{service}"
     uri = URI.parse(url)
     request = Net::HTTP.new(uri.host)
-    output = open(filename, "wb")
-    bytes = 0
     headers = {}
     headers['AUTHORIZATION'] = @auth_token if @auth_token
     headers['PROXY-USER'] = @proxy if @proxy
     # should be default, but forced here just in case
     headers["accept-encoding"] = "gzip;q=1.0,deflate;q=0.6,identity;q=0.3"
-
+    
     Net::HTTP.start(uri.host, uri.port) do |http|
       request = Net::HTTP::Get.new(uri.request_uri, headers)
       http.request(request) do |response|
         status = response.code.to_i
-        if status != 200
-          puts parse_error_message(status, response.body).red
-          return
+        if status == 404
+          raise NotFound, parse_error_message(status, response.body)
+        elsif status != 200
+          raise HTTPException, parse_error_message(status, response.body)
         end
-        puts "Streaming to #{filename}".green
-        response.read_body do |chunk|
-          output.write(chunk)
-          bytes += chunk.length
-          # $stdout.write('.'.green)
-        end
-        # $stdout.write("\n")
+        yield response
       end
-    end
-    puts "#{bytes} bytes written".green
-  ensure
-    output.close
+    end    
   end
   
   ######################################################

@@ -83,16 +83,75 @@ module VMC::Cli::Command
     end
 
 
+    LINE_LENGTH = 80
+
     def export_service(service=nil, filename=nil)
+      output = open(filename, "wb")
+      bytes = 0
+      path = nil
       raise VMC::Client::AuthError unless client.logged_in?
-      path = client.get_stream(service, filename)
-      return path
+      
+      banner = "Preparing export: "
+      display banner, false
+      client.get_stream(service, filename) do |response|
+        clear(LINE_LENGTH)
+        display "#{banner}#{'OK'.green}", true
+
+        disposition = response.header["content-disposition"]
+        # "attachment; filename=\"cbbcf33c-6446-4301-a28a-9c707137bfe2.tgz\""
+        attachment = disposition.match(/filename="(.*?)"/)[1]
+        extension = attachment.split(/\./)[-1]
+        banner = "Downloading export in #{extension} format "
+        display banner, false
+        start_time = Time.now
+        kbps = 0
+        
+        t = Thread.new do
+          while true do
+            sleep 1
+            progress = "%2dkb/s" % kbps
+            clear(progress.length)
+            display progress, false
+          end
+        end
+        response.read_body do |chunk|
+          output.write(chunk)
+          kbps = (bytes / 1000.0) / (Time.now - start_time).to_i
+          bytes += chunk.length
+        end
+        t.kill
+        
+        clear(LINE_LENGTH)
+        display "#{banner}#{'OK'.green}", true
+      end
+      
+      display "#{bytes} written to #{filename}"
+      return filename
+    rescue
+      clear(LINE_LENGTH)
+      raise
+    ensure
+      output.close
     end
 
     def import_service(service=nil, filename=nil)
       raise VMC::Client::AuthError unless client.logged_in?
-      path = client.put_stream(service, filename)
-      return display path
+
+      banner = "Importing service: "
+      display banner, false
+      t = Thread.new do
+        while true do
+          sleep 1
+          display ".", false
+        end
+      end
+      
+      if status = client.put_stream(service, filename)
+        clear(LINE_LENGTH)
+        display "#{banner}#{'OK'.green}", true
+      else
+        err "Import failed (http:#{status})"
+      end
     end
 
     def tunnel(service=nil, client_name=nil)
