@@ -85,15 +85,12 @@ module VMC::Cli::Command
 
     LINE_LENGTH = 80
 
-    def export_service(service=nil, filename=nil)
+    def stream_download(resource, filename)
       output = open(filename, "wb")
       bytes = 0
-      path = nil
-      raise VMC::Client::AuthError unless client.logged_in?
-      
       banner = "Preparing export: "
       display banner, false
-      client.get_stream(service, filename) do |response|
+      client.get_stream(resource) do |response|
         clear(LINE_LENGTH)
         display "#{banner}#{'OK'.green}", true
 
@@ -105,7 +102,7 @@ module VMC::Cli::Command
         display banner, false
         start_time = Time.now
         kbps = 0
-        
+
         t = Thread.new do
           while true do
             sleep 1
@@ -120,11 +117,11 @@ module VMC::Cli::Command
           bytes += chunk.length
         end
         t.kill
-        
+
         clear(LINE_LENGTH)
         display "#{banner}#{'OK'.green}", true
       end
-      
+
       display "#{bytes} written to #{filename}"
       return filename
     rescue
@@ -132,6 +129,14 @@ module VMC::Cli::Command
       raise
     ensure
       output.close
+    end
+
+    def export_service(service=nil, filename=nil)
+      raise VMC::Client::AuthError unless client.logged_in?
+      path = "/services/export/#{service}"
+      response = client.json_get(path)
+      follow = response[:uri]
+      stream_download(follow, filename)
     end
 
     def import_service(service=nil, filename=nil)
@@ -145,7 +150,7 @@ module VMC::Cli::Command
           display ".", false
         end
       end
-      
+
       if status = client.put_stream(service, filename)
         clear(LINE_LENGTH)
         display "#{banner}#{'OK'.green}", true

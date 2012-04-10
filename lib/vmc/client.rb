@@ -185,10 +185,9 @@ class VMC::Client
     input.close
   end
   
-  def get_stream(service, filename)
+  def get_stream(resource)
     check_login_status
-    url = "#{self.target}#{VMC::SERVICES_PATH}/download/#{service}"
-    uri = URI.parse(url)
+    uri = URI.parse(resource)
     request = Net::HTTP.new(uri.host)
     headers = {}
     headers['AUTHORIZATION'] = @auth_token if @auth_token
@@ -369,8 +368,6 @@ class VMC::Client
 
   ######################################################
 
-  private
-
   def json_get(url)
     status, body, headers = http_get(url, 'application/json')
     json_parse(body)
@@ -391,6 +388,8 @@ class VMC::Client
       JSON.parse(str, :symbolize_names => true)
     end
   end
+  
+  private
 
   require 'rest_client'
 
