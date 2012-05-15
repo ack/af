@@ -24,6 +24,8 @@ class VMC::Client
   attr_reader   :target, :host, :user, :proxy, :auth_token
   attr_accessor :trace
 
+  HTTP_TIMEOUT = 120
+
   # Error codes
   VMC_HTTP_ERROR_CODES = [ 400, 500 ]
 
@@ -380,6 +382,7 @@ class VMC::Client
     end
 
     req = {
+      :timeout => HTTP_TIMEOUT,
       :method => method, :url => "#{@target}/#{path}",
       :payload => payload, :headers => headers, :multipart => true
     }
